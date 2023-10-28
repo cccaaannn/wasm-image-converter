@@ -2,7 +2,7 @@ import Theme from '@/hooks/useTheme/theme-context';
 import { createEffect, onMount } from 'solid-js';
 import { ThemeType } from "./types";
 
-const THEME_STORAGE_KEY = "THEME";
+const THEME_STORAGE_KEY = "WASICO_THEME";
 
 const useTheme = () => {
 
