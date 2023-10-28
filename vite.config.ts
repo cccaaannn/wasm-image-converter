@@ -18,4 +18,5 @@ export default defineConfig({
 	resolve: {
 		alias: [{ find: '@', replacement: '/src' }],
 	},
+	base: process.env.NODE_ENV === "production" ? "/wasm-image-converter" : "/"
 });
