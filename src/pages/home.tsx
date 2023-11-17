@@ -1,29 +1,53 @@
-import Button from '@/components/button';
+import ConvertButton from '@/components/convert-button';
 import DragDropFilePicker from '@/components/drag-drop-file-picker';
 import SelectBox from '@/components/select-box';
 import useFFmpeg from '@/hooks/useFFmpeg/useFFmpeg';
-import { SupportedFormats, SupportedFormatsList } from '@/types/image-format';
+import { SupportedFormats } from '@/hooks/useFFmpeg/types';
 import FileUtils from '@/utils/file-utils';
 import { Show, createSignal } from 'solid-js';
 import Spinner from '@/components/spinner';
 import ErrorAlert from '@/components/error-alert';
 import DarkThemeToggleButton from '@/components/dark-theme-toggle-button';
 import useTheme from '@/hooks/useTheme/useTheme';
+import IconButton from '@/components/icon-button';
+import GearIcon from '@/components/icons/gear-icon';
+import { ConversionProps } from '@/hooks/useFFmpeg/types';
+import useAdvancedSettings from '@/pages/advanced-settings/useAdvancedSettings';
+import AdvancedSettings from '@/pages/advanced-settings/advanced-settings';
+import { SelectBoxItem } from "@/components/select-box";
+import InfoIcon from '@/components/icons/info-icon';
+import InfoAlert from '@/components/info-alert';
+
+export const SupportedFormatsList = Object.values(SupportedFormats).map<SelectBoxItem<SupportedFormats>>(format => { return { label: format, value: format as SupportedFormats } });
 
 function Home() {
     const [selectedFile, setSelectedFiles] = createSignal<File | null>(null);
 
     const [outputFormat, setOutputFormat] = createSignal<SupportedFormats>(SupportedFormats.ICO);
 
+    const { settingsVisible, setSettingsVisible, scale, setScale } = useAdvancedSettings();
+
     const { theme, toggleTheme } = useTheme();
 
-    const { convert, ready, error } = useFFmpeg();
+    const { ready, loading, convert } = useFFmpeg();
+
+    const [error, setError] = createSignal<string>("");
+    const [infoVisible, setInfoVisible] = createSignal<boolean>(false);
 
     const onConvert = async () => {
         const file = selectedFile();
         if (!file) return;
 
-        const conversionResult = await convert(file, outputFormat());
+        const conversionProps: ConversionProps = {
+            file: file,
+            outputFormat: outputFormat(),
+            width: scale().width || "-1",
+            height: scale().height || "-1"
+        }
+
+        const conversionResult = await convert(conversionProps);
+
+        conversionResult.status ? setError("") : setError(conversionResult.message);
 
         if (conversionResult.status) {
             FileUtils.download(conversionResult.outputFile);
@@ -33,22 +57,32 @@ function Home() {
     }
 
     return (
-        <div class="flex flex-col gap-2 mt-16 mx-auto max-w-screen-md px-4">
+        <div class="flex flex-col gap-3 mt-16 mx-auto max-w-screen-md px-4">
 
-            <div class="grid justify-items-center grid-cols-3">
-                <div class="flex flex-col justify-center items-center col-start-2">
-                    <h1 class="text-gray-900 dark:text-white text-3xl py-1">
-                        wasico
-                    </h1>
-                </div>
+            <div class="flex justify-between items-end">
+                <IconButton onclick={() => setInfoVisible(!infoVisible())}>
+                    <InfoIcon />
+                </IconButton>
 
-                <div class="ml-auto flex justify-end items-end">
-                    <DarkThemeToggleButton onclick={toggleTheme} activeTheme={theme} />
-                </div>
+                <h1 class="text-gray-900 dark:text-white text-3xl py-1">
+                    wasico
+                </h1>
+
+                <DarkThemeToggleButton onclick={toggleTheme} activeTheme={theme} />
             </div>
 
+            <Show when={infoVisible()}>
+                <InfoAlert label={
+                    <div class="flex flex-col">
+                        <span class="font-medium">Usage</span>
+                        <span>- Leave scale values empty to keep the original value.</span>
+                        <span>- Ico format supports up to 255x255.</span>
+                    </div>
+                } />
+            </Show>
+
             <Show when={error()}>
-                <ErrorAlert label={<><span class="font-medium">Error!</span> An error occurred while converting</>} />
+                <ErrorAlert label={<><span class="font-medium">Error!</span> {error()}</>} />
             </Show>
 
             <Show
@@ -60,25 +94,39 @@ function Home() {
                     </div>
                 }
             >
-                <div class="flex flex-col gap-2">
+                <div class="flex flex-col gap-4">
                     <DragDropFilePicker
                         file={selectedFile}
                         onchange={setSelectedFiles}
                         accept="image/*"
                     />
 
-                    <div class="flex gap-4 justify-between items-end">
-                        <SelectBox
-                            // label="Output format"
-                            items={SupportedFormatsList}
-                            value={outputFormat}
-                            onchange={setOutputFormat}
-                        />
+                    <div class="flex justify-between items-end">
+                        <div class="flex items-center gap-2">
+                            <SelectBox
+                                items={SupportedFormatsList}
+                                value={outputFormat}
+                                onchange={setOutputFormat}
+                            />
 
-                        <Button class="h-10" onclick={onConvert} disabled={selectedFile() === null}>
-                            Convert
-                        </Button>
+                            <IconButton
+                                onclick={() => setSettingsVisible(!settingsVisible())}
+                            >
+                                <GearIcon />
+                            </IconButton>
+                        </div>
+
+                        <ConvertButton
+                            onclick={onConvert}
+                            disabled={selectedFile() === null || loading()}
+                            loading={loading()}
+                        />
                     </div>
+
+                    <Show when={settingsVisible()}>
+                        <AdvancedSettings scale={scale} setScale={setScale} />
+                    </Show>
+
                 </div>
             </Show>
 
