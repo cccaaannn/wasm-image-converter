@@ -37,9 +37,12 @@ const SelectBox = <T extends {}>(props: SelectBoxProps<T>) => {
 
     return (
         <label class="block text-sm font-medium text-gray-900 dark:text-white">
-            <p class="mb-2">
-                {props.label}
-            </p>
+            {
+                props.label &&
+                <p class="mb-2">
+                    {props.label}
+                </p>
+            }
 
             <select
                 class="
@@ -50,7 +53,8 @@ const SelectBox = <T extends {}>(props: SelectBoxProps<T>) => {
                     bg-gray-50 
                     border-gray-300 
                     text-gray-900 
-                    text-sm rounded-lg 
+                    text-sm 
+                    rounded-lg 
                     focus:ring-blue-500 
                     focus:border-blue-500 
                     dark:bg-gray-700 
