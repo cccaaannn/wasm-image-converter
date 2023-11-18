@@ -6,3 +6,21 @@ wasm-image-converter or wasico is a client side image converter that uses [ffmpe
 
 ---
 
+## Demo
+[wasico](https://cccaaannn.github.io/wasm-image-converter/)
+
+
+### Running for Development
+```shell
+npm run dev
+```
+
+### Building
+```shell
+npm run build
+```
+
+### Deploy
+```shell
+npm run deploy
+```
