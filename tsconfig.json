@@ -25,7 +25,8 @@
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "types": [
-      "vite/client"
+      "vite/client",
+      "node"
     ],
     "paths": {
       "@/*": [
