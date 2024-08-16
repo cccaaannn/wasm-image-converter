@@ -1,4 +1,4 @@
-import { SupportedFormats, ImageFormatDetail } from '@/hooks/useFFmpeg/types';
+import { SupportedFormat, ImageFormatDetail } from '@/hooks/useFFmpeg/types';
 import FileUtils from '@/utils/file-utils';
 import { FFmpeg } from '@ffmpeg/ffmpeg';
 import { FileData, LogEvent } from '@ffmpeg/ffmpeg/dist/esm/types';
@@ -6,11 +6,25 @@ import { fetchFile } from '@ffmpeg/util';
 import { createSignal, onMount, onCleanup } from 'solid-js';
 import { ConversionProps, ConversionResult, FFmpegCommandParameters, UseFFmpeg } from './types';
 
+const getSizeForFormat = (format: SupportedFormat, width: number | null, height: number | null): { width: number, height: number } => {
+    const formatDetail = ImageFormatDetail[format];
+
+    const maxWidth = (!width || width > formatDetail.maxWidth) ? formatDetail.defaultWidth : width;
+    const maxHeight = (!height || height > formatDetail.maxHeight) ? formatDetail.defaultHeight : height;
+
+    return {
+        width: Math.min(maxWidth, formatDetail.maxWidth),
+        height: Math.min(maxHeight, formatDetail.maxHeight)
+    };
+}
+
 const formatFFmpegCommand = (parameters: FFmpegCommandParameters): string[] => {
     const command = ["-i", parameters.inputFileName];
 
+    const size = getSizeForFormat(parameters.outputFormat, parameters.width, parameters.height);
+
     command.push("-vf");
-    const scale = `${parameters.width ?? -1}:${parameters.height ?? -1}`;
+    const scale = `${size.width}:${size.height}`;
     command.push(`scale=${scale}`);
 
     command.push(parameters.outputFileName);
@@ -67,7 +81,7 @@ const useFFmpeg = (): UseFFmpeg => {
             };
         }
 
-        const inputFormat = extension.toLowerCase() as SupportedFormats;
+        const inputFormat = extension.toLowerCase() as SupportedFormat;
 
         const inputFileName = `img.${ImageFormatDetail[inputFormat].extension}`;
         const outputFileName = `${name}.${ImageFormatDetail[conversionProps.outputFormat].extension}`;

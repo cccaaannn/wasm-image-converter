@@ -2,7 +2,7 @@ import ConvertButton from '@/components/convert-button';
 import DragDropFilePicker from '@/components/drag-drop-file-picker';
 import SelectBox from '@/components/select-box';
 import useFFmpeg from '@/hooks/useFFmpeg/useFFmpeg';
-import { SupportedFormats } from '@/hooks/useFFmpeg/types';
+import { SupportedFormat } from '@/hooks/useFFmpeg/types';
 import FileUtils from '@/utils/file-utils';
 import { Show, createSignal } from 'solid-js';
 import Spinner from '@/components/spinner';
@@ -18,12 +18,12 @@ import { SelectBoxItem } from "@/components/select-box";
 import InfoIcon from '@/components/icons/info-icon';
 import InfoAlert from '@/components/info-alert';
 
-export const SupportedFormatsList = Object.values(SupportedFormats).map<SelectBoxItem<SupportedFormats>>(format => { return { label: format, value: format as SupportedFormats } });
+export const SupportedFormatsList = Object.values(SupportedFormat).map<SelectBoxItem<SupportedFormat>>(format => { return { label: format, value: format as SupportedFormat } });
 
 function Home() {
     const [selectedFile, setSelectedFiles] = createSignal<File | null>(null);
 
-    const [outputFormat, setOutputFormat] = createSignal<SupportedFormats>(SupportedFormats.ICO);
+    const [outputFormat, setOutputFormat] = createSignal<SupportedFormat>(SupportedFormat.ICO);
 
     const { settingsVisible, setSettingsVisible, scale, setScale } = useAdvancedSettings();
 
@@ -41,8 +41,8 @@ function Home() {
         const conversionProps: ConversionProps = {
             file: file,
             outputFormat: outputFormat(),
-            width: scale().width || "-1",
-            height: scale().height || "-1"
+            width: scale().width ? parseInt(scale().width, 10) : null,
+            height: scale().height ? parseInt(scale().height, 10) : null
         }
 
         const conversionResult = await convert(conversionProps);
