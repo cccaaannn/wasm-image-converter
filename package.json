@@ -1,7 +1,11 @@
 {
   "name": "wasm-image-converter",
-  "private": true,
-  "version": "0.0.0",
+  "displayName": "wasico",
+  "description": "wasico is a client side image converter, it uses webassembly and ffmpeg to convert images on the browser.",
+  "private": false,
+  "version": "2.0.0",
+  "homepage": "https://cccaaannn.github.io/wasm-image-converter",
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
